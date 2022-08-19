@@ -83,12 +83,13 @@ func (b *BlockChain) GetAllUTXOs(addr string) (UTXOs []*UTXO, utxosTotalAmount u
 		return
 	}
 	curBlock := b.GetLastBlock()
-	UTXOs = make([]*UTXO, 0, 5)
-	spentTxInput := make([]*TxInput, 0, 5)
+	UTXOs = make([]*UTXO, 0)
+	spentTxInput := make([]*TxInput, 0)
 	for {
 		for _, transaction := range curBlock.Transactions {
-			txHash, err := transaction.GetTxHash()
-			if err != nil {
+			txHash, err2 := transaction.GetTxHash()
+			if err2 != nil {
+				err = err2
 				return
 			}
 			//处理outputs

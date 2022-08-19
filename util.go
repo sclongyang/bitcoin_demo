@@ -24,11 +24,11 @@ func Hash160(data []byte) []byte {
 	return ripeHash.Sum(nil)
 }
 
-func Convert2Bytes(num interface{}) []byte {
+func Convert2Bytes(num uint64) []byte {
 	var buffer bytes.Buffer
 	err := binary.Write(&buffer, binary.LittleEndian, num)
 	if err != nil {
-		fmt.Println("Uint2Bytes err:", num)
+		fmt.Println("Convert2Bytes err:", num)
 		return nil
 	}
 	return buffer.Bytes()

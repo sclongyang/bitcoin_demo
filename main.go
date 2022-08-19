@@ -2,7 +2,5 @@ package main
 
 func main() {
 	cli := CLI{}
-	for true {
-		cli.Run()
-	}
+	cli.Run()
 }

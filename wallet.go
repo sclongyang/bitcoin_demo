@@ -23,10 +23,13 @@ var WalletLocal Wallet = Wallet{
 	KeyPairs: make(map[string]KeyPair, 5),
 }
 
-func (w *Wallet) ListAllAddr() {
+func (w *Wallet) ListAllAddr() []string {
+	result := []string{}
 	for addr, _ := range w.KeyPairs {
 		fmt.Println("Addr: ", addr)
+		result = append(result, addr)
 	}
+	return result
 }
 
 func (w *Wallet) Send(fromAddr, targetAddr string, amount uint64, chain *BlockChain, minerAddr string) error {

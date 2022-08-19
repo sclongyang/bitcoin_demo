@@ -103,7 +103,7 @@ func NewTx(fromAddr string, targetAddr string, value uint64, chain *BlockChain, 
 	}
 
 	if keypair, ok := wallet.KeyPairs[fromAddr]; ok {
-		txInputs := make([]*TxInput, 0, 5)
+		txInputs := make([]*TxInput, 0)
 		for _, utxo := range utxos {
 			txInputs = append(txInputs, &TxInput{
 				FromTxHash: utxo.TxHash,
@@ -161,6 +161,7 @@ func NewTx(fromAddr string, targetAddr string, value uint64, chain *BlockChain, 
 				S: s,
 			}
 			input.UnLockScript.PubKey = keypair.PubKey
+			//tx.TxInputs[i].UnLockScript.PubKey = keypair.PubKey
 		}
 		return tx, nil
 
@@ -170,13 +171,19 @@ func NewTx(fromAddr string, targetAddr string, value uint64, chain *BlockChain, 
 }
 
 func (t *Transaction) Check(chain *BlockChain) error {
+	//是否coinbase
+	if len(t.TxInputs) == 1 && t.TxInputs[0].FromTxHash == nil && t.TxInputs[0].IdxOfUTXO == -1 {
+		return nil
+	}
 	var totalInputAmount uint64
 	var totalOutputAmount uint64
 	txCopy := *t
 	//截断后再计算hash
-	for _, txInput := range txCopy.TxInputs {
-		txInput.UnLockScript.PubKey = nil
-		txInput.UnLockScript.Sig = nil
+	for i, _ := range txCopy.TxInputs {
+		txCopy.TxInputs[i].UnLockScript.PubKey = nil
+		txCopy.TxInputs[i].UnLockScript.Sig = nil
+		//txInput.UnLockScript.PubKey = nil
+		//txInput.UnLockScript.Sig = nil
 	}
 	txHash, err := txCopy.GetTxHash()
 	if err != nil {

@@ -22,19 +22,44 @@ const Usage = `
 	./blockchain listAddress "列举所有的钱包地址"
 	./blockchain printTx "打印区块的所有交易"
 	./blockchain genKeyPair "创建私钥公钥对"
+	./blockchain all "全流程"
 `
 
 //负责解析命令的方法
 func (cli *CLI) Run() {
 	cmds := os.Args
 	//用户至少输入两个参数
-	if len(cmds) < 2 {
-		fmt.Println("输入参数无效，请检查!")
-		fmt.Println(Usage)
-		return
-	}
+	//if len(cmds) < 2 {
+	//	fmt.Println("输入参数无效，请检查!")
+	//	fmt.Println(Usage)
+	//	return
+	//}
 
-	switch cmds[1] {
+	//switch cmds[1] {
+	switch "all" {
+	case "all":
+		cli.GenKeyPair()
+		cli.GenKeyPair()
+		cli.GenKeyPair()
+		addrList := cli.listAddress()
+		addr1 := addrList[0]
+		addr2 := addrList[1]
+		addr3 := addrList[2]
+		cli.createBlockChain(addr1)
+		fmt.Println("send----------------------")
+
+		cli.send(addr1, addr2, 3, addr3)
+
+		fmt.Println("print blocks----------------------")
+		cli.print()
+		fmt.Println("getbalance ----------------------")
+		cli.getBalance(addr1)
+		cli.getBalance(addr2)
+		cli.getBalance(addr3)
+		fmt.Println("print tx ----------------------")
+		cli.printTx()
+		fmt.Println("over")
+
 	case "createBlockChain":
 		fmt.Println("创建区块被调用!")
 		if len(cmds) != 3 {
@@ -45,10 +70,7 @@ func (cli *CLI) Run() {
 		cli.createBlockChain(address)
 	case "genKeyPair":
 		fmt.Println("开始创建私钥")
-		err := GenKeyPair()
-		if err != nil {
-			fmt.Println(err)
-		}
+		cli.GenKeyPair()
 	case "print":
 		fmt.Println("打印区块链被调用!")
 		cli.print()
@@ -96,6 +118,13 @@ func (cli *CLI) createBlockChain(address string) {
 	}
 }
 
+func (cli *CLI) GenKeyPair() {
+	err := GenKeyPair()
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
 func (cli *CLI) print() {
 	err := BlockChainObj.TraverseAllBlocks(func(block *Block) (bool, error) {
 		fmt.Printf("\n++++++++++++++++++++++\n")
@@ -120,19 +149,20 @@ func (cli *CLI) getBalance(address string) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println("balance:", balance)
+	fmt.Println("balance:", balance, address)
 }
 
 func (cli *CLI) send(from, to string, amount uint64, miner string) {
 	err := WalletLocal.Send(from, to, amount, BlockChainObj, miner)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("转账失败:", err)
+		return
 	}
 	fmt.Println("转账成功")
 }
 
-func (cli *CLI) listAddress() {
-	WalletLocal.ListAllAddr()
+func (cli *CLI) listAddress() []string {
+	return WalletLocal.ListAllAddr()
 }
 
 func (cli *CLI) printTx() {

@@ -10,11 +10,11 @@ import (
 )
 
 type Block struct {
-	Version       uint
+	Version       uint64
 	PrevBlockHash []byte
 	MerkleRoot    []byte
-	TimeStamp     int64
-	Difficulty    uint //简单起见, 代表前面有几个0
+	TimeStamp     uint64
+	Difficulty    uint64 //简单起见, 代表前面有几个0
 	Nonce         uint64
 	Transactions  []*Transaction
 }
@@ -36,7 +36,7 @@ func NewBlock(prevBlockHash []byte, txs []*Transaction, minerAddr string, minerD
 		Version:       0,
 		PrevBlockHash: prevBlockHash,
 		MerkleRoot:    mekleRoot,
-		TimeStamp:     time.Now().Unix(),
+		TimeStamp:     uint64(time.Now().Unix()),
 		Difficulty:    0,
 		Nonce:         0,
 		Transactions:  txs,
@@ -63,7 +63,7 @@ func (b *Block) SetNonce() error {
 	b.Nonce = 0
 	var targetHash = big.NewInt(1)
 	temBigInt := big.NewInt(0)
-	targetHash.Lsh(targetHash, 256-b.Difficulty)
+	targetHash.Lsh(targetHash, 256-uint(b.Difficulty))
 	for b.Nonce < math.MaxUint64 {
 		if temBigInt.SetBytes(b.GetBlockHash()[:]).Cmp(targetHash) == -1 {
 			return nil
@@ -82,17 +82,18 @@ func genMekleRoot(txs []*Transaction) (mekleRoot []byte, err error) {
 	for i := 0; ; i++ {
 		hash, err := txs[2*i].GetTxHash()
 		if err != nil {
-			return
+			return nil, err
 		}
 		tempHashArray = append(tempHashArray, hash)
 
 		if 2*i+1 == len(txs) {
 			//copy
 			tempHashArray = append(tempHashArray, hash)
+			break
 		} else {
 			hash2, err := txs[2*i+1].GetTxHash()
 			if err != nil {
-				return
+				return nil, err
 			}
 			tempHashArray = append(tempHashArray, hash2)
 		}
