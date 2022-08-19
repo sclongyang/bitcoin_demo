@@ -21,6 +21,7 @@ const Usage = `
 	./blockchain send <FROM> <TO> <AMOUNT> <MINER>
 	./blockchain listAddress "列举所有的钱包地址"
 	./blockchain printTx "打印区块的所有交易"
+	./blockchain genKeyPair "创建私钥公钥对"
 `
 
 //负责解析命令的方法
@@ -42,6 +43,12 @@ func (cli *CLI) Run() {
 		}
 		address := cmds[2]
 		cli.createBlockChain(address)
+	case "genKeyPair":
+		fmt.Println("开始创建私钥")
+		err := GenKeyPair()
+		if err != nil {
+			fmt.Println(err)
+		}
 	case "print":
 		fmt.Println("打印区块链被调用!")
 		cli.print()
