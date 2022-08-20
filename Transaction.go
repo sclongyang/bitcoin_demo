@@ -11,7 +11,7 @@ import (
 )
 
 type Transaction struct {
-	TxInputs  []*TxInput
+	TxInputs  []TxInput //不使用引用是为了方便copy
 	TxOutputs []*TxOutput
 	TimeStamp int64
 }
@@ -75,7 +75,7 @@ func NewCoinBaseTx(targetAddr string, value uint64, desc string) (tx *Transactio
 	}
 
 	tx = &Transaction{
-		TxInputs:  []*TxInput{&txInput},
+		TxInputs:  []TxInput{txInput},
 		TxOutputs: []*TxOutput{&txOutput},
 		TimeStamp: time.Now().Unix(),
 	}
@@ -103,9 +103,9 @@ func NewTx(fromAddr string, targetAddr string, value uint64, chain *BlockChain, 
 	}
 
 	if keypair, ok := wallet.KeyPairs[fromAddr]; ok {
-		txInputs := make([]*TxInput, 0)
+		txInputs := make([]TxInput, 0)
 		for _, utxo := range utxos {
-			txInputs = append(txInputs, &TxInput{
+			txInputs = append(txInputs, TxInput{
 				FromTxHash: utxo.TxHash,
 				IdxOfUTXO:  utxo.Idx,
 				UnLockScript: UnLockScriptStruct{
@@ -155,13 +155,14 @@ func NewTx(fromAddr string, targetAddr string, value uint64, chain *BlockChain, 
 		if err != nil {
 			return nil, err
 		}
-		for _, input := range tx.TxInputs {
-			input.UnLockScript.Sig = &Signature{
+		for i, _ := range tx.TxInputs {
+			//input.UnLockScript.Sig = &Signature{
+			tx.TxInputs[i].UnLockScript.Sig = &Signature{
 				R: r,
 				S: s,
 			}
-			input.UnLockScript.PubKey = keypair.PubKey
-			//tx.TxInputs[i].UnLockScript.PubKey = keypair.PubKey
+			//input.UnLockScript.PubKey = keypair.PubKey
+			tx.TxInputs[i].UnLockScript.PubKey = keypair.PubKey
 		}
 		return tx, nil
 
@@ -178,6 +179,9 @@ func (t *Transaction) Check(chain *BlockChain) error {
 	var totalInputAmount uint64
 	var totalOutputAmount uint64
 	txCopy := *t
+	//需要对TxInputs进行深度拷贝
+	txCopy.TxInputs = make([]TxInput, len(t.TxInputs))
+	copy(txCopy.TxInputs, t.TxInputs)
 	//截断后再计算hash
 	for i, _ := range txCopy.TxInputs {
 		txCopy.TxInputs[i].UnLockScript.PubKey = nil
@@ -199,7 +203,7 @@ func (t *Transaction) Check(chain *BlockChain) error {
 		idx := -1
 		var utxoOfInput *UTXO
 		for i, utxo := range utxos {
-			if utxo.IsMatchTxInput(input) {
+			if utxo.IsMatchTxInput(&input) {
 				idx = i
 				utxoOfInput = utxo
 				break

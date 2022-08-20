@@ -84,7 +84,7 @@ func (b *BlockChain) GetAllUTXOs(addr string) (UTXOs []*UTXO, utxosTotalAmount u
 	}
 	curBlock := b.GetLastBlock()
 	UTXOs = make([]*UTXO, 0)
-	spentTxInput := make([]*TxInput, 0)
+	spentTxInput := make([]TxInput, 0)
 	for {
 		for _, transaction := range curBlock.Transactions {
 			txHash, err2 := transaction.GetTxHash()
@@ -103,7 +103,7 @@ func (b *BlockChain) GetAllUTXOs(addr string) (UTXOs []*UTXO, utxosTotalAmount u
 					}
 					idxOfSpentInput := -1
 					for i, input := range spentTxInput {
-						if candidateUTXO.IsMatchTxInput(input) {
+						if candidateUTXO.IsMatchTxInput(&input) {
 							idxOfSpentInput = i
 							break
 						}
