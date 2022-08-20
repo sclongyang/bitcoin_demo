@@ -71,7 +71,7 @@ func CheckAddr(addr string) bool {
 }
 
 func PubKeyBytes2PubKey(pubkey []byte) (*ecdsa.PublicKey, error) {
-	if len(pubkey) != 512 {
+	if len(pubkey) != 64 {
 		return nil, fmt.Errorf("pubkey len is not 512")
 	}
 	var x, y big.Int

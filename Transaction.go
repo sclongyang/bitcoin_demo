@@ -7,6 +7,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"math/big"
+	"strings"
 	"time"
 )
 
@@ -132,7 +133,7 @@ func NewTx(fromAddr string, targetAddr string, value uint64, chain *BlockChain, 
 		}
 		//找零output
 		changeOutput := &TxOutput{
-			Value: utxosTotalAmount - value,
+			Value: totalAmount - value,
 			LockScript: LockScriptStruct{
 				PubKeyHash: fromAddrPubkeyHash,
 			},
@@ -221,6 +222,9 @@ func (t *Transaction) Check(chain *BlockChain) error {
 			return fmt.Errorf("txinput pubkeyHash not eq to utxo pubkeyHash")
 		}
 		publicKey, err := PubKeyBytes2PubKey(input.UnLockScript.PubKey)
+		if err != nil {
+			return err
+		}
 		if !ecdsa.Verify(publicKey, txHash, input.UnLockScript.Sig.R, input.UnLockScript.Sig.S) {
 			return fmt.Errorf("input 签名不正确")
 		}
@@ -247,4 +251,28 @@ func (t *Transaction) GetTxHash() ([]byte, error) {
 		return nil, err
 	}
 	return Hash256(buffer.Bytes()), nil
+}
+
+func (tx *Transaction) String() string {
+	var lines []string
+
+	hash, _ := tx.GetTxHash()
+	lines = append(lines, fmt.Sprintf("--- txHash %x:", hash))
+
+	for i, input := range tx.TxInputs {
+
+		lines = append(lines, fmt.Sprintf("     Input %d:", i))
+		lines = append(lines, fmt.Sprintf("       TXID:      %x", input.FromTxHash))
+		lines = append(lines, fmt.Sprintf("       Out:       %d", input.IdxOfUTXO))
+		lines = append(lines, fmt.Sprintf("       Signature: %x", input.UnLockScript.Sig))
+		lines = append(lines, fmt.Sprintf("       PubKey:    %x", input.UnLockScript.PubKey))
+	}
+
+	for i, output := range tx.TxOutputs {
+		lines = append(lines, fmt.Sprintf("     Output %d:", i))
+		lines = append(lines, fmt.Sprintf("       Value:  %v", output.Value))
+		lines = append(lines, fmt.Sprintf("       pubkeyhash: %x", output.LockScript.PubKeyHash))
+	}
+
+	return strings.Join(lines, "\n")
 }

@@ -37,7 +37,7 @@ func NewBlock(prevBlockHash []byte, txs []*Transaction, minerAddr string, minerD
 		PrevBlockHash: prevBlockHash,
 		MerkleRoot:    mekleRoot,
 		TimeStamp:     uint64(time.Now().Unix()),
-		Difficulty:    0,
+		Difficulty:    8,
 		Nonce:         0,
 		Transactions:  txs,
 	}
@@ -65,7 +65,9 @@ func (b *Block) SetNonce() error {
 	temBigInt := big.NewInt(0)
 	targetHash.Lsh(targetHash, 256-uint(b.Difficulty))
 	for b.Nonce < math.MaxUint64 {
-		if temBigInt.SetBytes(b.GetBlockHash()[:]).Cmp(targetHash) == -1 {
+		blockHash := b.GetBlockHash()
+		fmt.Printf("挖矿中: %x\r", blockHash)
+		if temBigInt.SetBytes(blockHash).Cmp(targetHash) == -1 {
 			return nil
 		}
 		b.Nonce++

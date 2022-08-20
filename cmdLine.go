@@ -41,21 +41,32 @@ func (cli *CLI) Run() {
 		cli.GenKeyPair()
 		cli.GenKeyPair()
 		cli.GenKeyPair()
+		cli.GenKeyPair()
 		addrList := cli.listAddress()
 		addr1 := addrList[0]
 		addr2 := addrList[1]
 		addr3 := addrList[2]
+		addr4 := addrList[3]
 		cli.createBlockChain(addr1)
 		fmt.Println("send----------------------")
 
-		cli.send(addr1, addr2, 3, addr3)
+		cli.send(addr1, addr2, 10, addr1)
+		cli.send(addr1, addr3, 10, addr1)
+		cli.send(addr1, addr4, 10, addr1)
 
-		fmt.Println("print blocks----------------------")
-		cli.print()
+		cli.send(addr2, addr3, 1, addr1)
+		cli.send(addr2, addr4, 1, addr1)
+		cli.send(addr3, addr4, 1, addr1)
+
 		fmt.Println("getbalance ----------------------")
 		cli.getBalance(addr1)
 		cli.getBalance(addr2)
 		cli.getBalance(addr3)
+		cli.getBalance(addr4)
+
+		fmt.Println("print blocks----------------------")
+		cli.print()
+
 		fmt.Println("print tx ----------------------")
 		cli.printTx()
 		fmt.Println("over")
@@ -127,14 +138,14 @@ func (cli *CLI) GenKeyPair() {
 
 func (cli *CLI) print() {
 	err := BlockChainObj.TraverseAllBlocks(func(block *Block) (bool, error) {
-		fmt.Printf("\n++++++++++++++++++++++\n")
+		fmt.Printf("\n------------------------------\n")
 		fmt.Printf("Version : %d\n", block.Version)
+		fmt.Printf("Hash : %x\n", block.GetBlockHash())
 		fmt.Printf("PrevHash : %x\n", block.PrevBlockHash)
 		fmt.Printf("MerkleRoot : %x\n", block.MerkleRoot)
 		fmt.Printf("TimeStamp : %d\n", block.TimeStamp)
-		fmt.Printf("Bits : %d\n", block.Difficulty)
+		fmt.Printf("Difficulty : %d\n", block.Difficulty)
 		fmt.Printf("Nonce : %d\n", block.Nonce)
-		fmt.Printf("Hash : %x\n", block.GetBlockHash())
 		fmt.Printf("Data : %s\n", string(block.Transactions[0].TxInputs[0].UnLockScript.PubKey)) //矿工写入的数据
 		return false, nil
 	})
@@ -158,7 +169,7 @@ func (cli *CLI) send(from, to string, amount uint64, miner string) {
 		fmt.Println("转账失败:", err)
 		return
 	}
-	fmt.Println("转账成功")
+	fmt.Println("转账成功:", amount, from, to)
 }
 
 func (cli *CLI) listAddress() []string {
