@@ -54,7 +54,7 @@ func (a *API) getBalance(address string) {
 }
 
 func (a *API) send(from, to string, amount uint64, miner string) {
-	err := WalletLocal.Send(from, to, amount, BlockChainObj, miner)
+	err := WalletObj.Send(from, to, amount, BlockChainObj, miner)
 	if err != nil {
 		fmt.Println("转账失败:", err)
 		return
@@ -63,7 +63,7 @@ func (a *API) send(from, to string, amount uint64, miner string) {
 }
 
 func (a *API) listAddress() []string {
-	return WalletLocal.ListAllAddr()
+	return WalletObj.ListAllAddr()
 }
 
 func (a *API) printTx() {

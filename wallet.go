@@ -19,7 +19,7 @@ type KeyPair struct {
 	PubKey  []byte
 }
 
-var WalletLocal Wallet = Wallet{
+var WalletObj Wallet = Wallet{
 	KeyPairs: make(map[string]KeyPair, 5),
 }
 
@@ -51,7 +51,7 @@ func GenKeyPair() error {
 	pubKey := append(pubKeyRaw.X.Bytes(), pubKeyRaw.Y.Bytes()...) //简单起见使用非压缩的公钥
 	addr := PubKey2Addr(pubKey)
 
-	WalletLocal.KeyPairs[addr] = KeyPair{
+	WalletObj.KeyPairs[addr] = KeyPair{
 		PrivKey: privateKey,
 		PubKey:  pubKey,
 	}
